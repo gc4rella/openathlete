@@ -62,6 +62,7 @@ export class TrainingMatchProcessor implements ActivityProcessor {
     const trainingSessions = await this.prisma.eventTraining.findMany({
       where: {
         event: {
+          OR: [{ trainingWeekId: null }, { trainingWeek: { cycle: { trainingPlan: { status: "ACTIVE" } } } }],
           athleteId: activity.event.athleteId,
           startDate: {
             gte: dayStart,

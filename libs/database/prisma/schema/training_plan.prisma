@@ -6,6 +6,7 @@
 // - Cycle: Training cycles within a plan (e.g., Base, Build, Taper)
 // - TrainingWeek: Weekly structure within cycles
 // - AthleteAvailability: Athlete's weekly schedule for plan generation
+// - TrainingPlanAdjustment: Audit trail of automatic/manual plan changes
 // ============================================================================
 
 /// Training plan.
@@ -17,22 +18,38 @@ model TrainingPlan {
 
   // fields
   /// Plan name
-  name        String
+  timeZone         String @default("UTC") @map("time_zone")
+  name             String
   /// Plan description
-  description String?
+  description      String?
   /// Training goal (e.g., "Finish UTMB 2025", "Sub-3:30 marathon")
-  goal        String
+  goal             String
   /// Plan start date
-  startDate   DateTime   @map("start_date")
+  startDate        DateTime   @map("start_date")
   /// Plan end date
-  endDate     DateTime   @map("end_date")
+  endDate          DateTime   @map("end_date")
   /// Plan status: DRAFT, ACTIVE, COMPLETED, or ARCHIVED
-  status      PlanStatus @default(DRAFT)
+  status           PlanStatus @default(DRAFT)
+  /// Primary sport this plan targets
+  sportType        SportType  @default(RUNNING) @map("sport_type")
+  /// Target/race distance in meters (optional, null for general fitness plans)
+  targetDistance   Float?     @map("target_distance")
+  /// Target/goal finish time in seconds (optional)
+  targetTime       Int?       @map("target_time")
+  /// Race date the plan builds towards (optional, null for open-ended plans)
+  raceDate         DateTime?  @map("race_date")
+  /// Number of training days per week requested by the athlete
+  daysPerWeek      Int?       @map("days_per_week")
+  /// Version of the plan generation engine that produced this plan
+  generatorVersion String?    @map("generator_version")
+  /// Full generation input (wizard answers + athlete context snapshot), for reproducibility
+  generationInput  Json?      @map("generation_input")
 
   // relationships
-  athlete   Athlete @relation(fields: [athleteId], references: [athleteId], onDelete: Cascade)
-  athleteId Int     @map("athlete_id")
-  cycles    Cycle[]
+  athlete     Athlete                 @relation(fields: [athleteId], references: [athleteId], onDelete: Cascade)
+  athleteId   Int                     @map("athlete_id")
+  cycles      Cycle[]
+  adjustments TrainingPlanAdjustment[]
 
   // timestamps
   createdAt DateTime @default(now()) @map("created_at")
@@ -40,6 +57,40 @@ model TrainingPlan {
 
   @@index([athleteId, status])
   @@map("training_plan")
+}
+
+/// Training plan adjustment.
+/// Audit trail of every change made to a plan after generation, whether applied
+/// automatically by the adaptation engine or manually by the athlete/coach.
+/// Powers the "why did my plan change?" feed: an auto-adjusting plan is only
+/// trustworthy if every change is explainable.
+model TrainingPlanAdjustment {
+  // primary key
+  trainingPlanAdjustmentId Int @id @default(autoincrement()) @map("training_plan_adjustment_id")
+
+  // fields
+  /// What triggered the adjustment
+  trigger   PlanAdjustmentTrigger
+  /// Human-readable explanation shown to the athlete
+  reason    String
+  /// Structured diff of what changed (sessions moved/downgraded/removed, load deltas)
+  changes   Json
+  /// Whether the adjustment was applied automatically (true) or by a human (false)
+  automatic Boolean               @default(true)
+
+  // relationships
+  trainingPlan   TrainingPlan  @relation(fields: [trainingPlanId], references: [trainingPlanId], onDelete: Cascade)
+  trainingPlanId Int           @map("training_plan_id")
+  trainingWeek   TrainingWeek? @relation(fields: [trainingWeekId], references: [trainingWeekId], onDelete: SetNull)
+  trainingWeekId Int?          @map("training_week_id")
+
+  // timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([trainingPlanId, createdAt])
+  @@index([trainingWeekId])
+  @@map("training_plan_adjustment")
 }
 
 /// Training week.
@@ -51,6 +102,7 @@ model TrainingWeek {
 
   // fields
   /// Position in the cycle (1, 2, 3, ...)
+  phase        CyclePhase?
   weekNumber   Int      @map("week_number")
   /// Week start date
   startDate    DateTime @map("start_date")
@@ -64,9 +116,10 @@ model TrainingWeek {
   targetLoad   Float?   @map("target_load")
 
   // relationships
-  cycle    Cycle   @relation(fields: [cycleId], references: [cycleId], onDelete: Cascade)
-  cycleId  Int     @map("cycle_id")
-  sessions Event[] // training sessions scheduled in this week
+  cycle       Cycle                    @relation(fields: [cycleId], references: [cycleId], onDelete: Cascade)
+  cycleId     Int                      @map("cycle_id")
+  sessions    Event[] // training sessions scheduled in this week
+  adjustments TrainingPlanAdjustment[]
 
   // timestamps
   createdAt DateTime @default(now()) @map("created_at")

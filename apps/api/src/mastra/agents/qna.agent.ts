@@ -2,6 +2,8 @@ import { Agent } from '@mastra/core/agent';
 
 import { QNA_MODEL } from 'src/common/constants/ai-models.constant';
 
+import { coachReadTools } from '../tools';
+
 export const qnaAgent = new Agent({
   name: 'qna',
   description:
@@ -21,8 +23,11 @@ CRITICAL RULES:
 
 WORKFLOW:
 - "show me activities" → fetch-activities tool → present results
-- "when can I train" → fetch-athlete-availability tool → present results  
-- "my training load" → calculate-training-load tool → present results
+- "when can I train" → fetch-athlete-availability tool → present results
+- "my training load" → fetch-training-load tool → present results
+- "how is my plan going" → fetch-training-plan tool → present results
+- "what's my next session" → fetch-upcoming-sessions tool → present results
+- any mention of pain or niggles → fetch-injuries tool before answering
 
 YOUR ROLE:
 - Answer data questions with actual numbers
@@ -52,4 +57,5 @@ REMEMBER:
 - Keywords "show", "what", "how many" = CALL TOOL IMMEDIATELY
 - Use real data only - be their supportive, data-driven coach!`,
   model: QNA_MODEL,
+  tools: coachReadTools,
 });

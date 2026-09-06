@@ -22,6 +22,7 @@ import {
   MedalIcon,
   MessageCircle,
   PieChart,
+  Target,
   TrendingUp,
   User,
 } from 'lucide-react';
@@ -77,6 +78,12 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
             icon: Calendar,
           },
           {
+            title: m.training_plan(),
+            url:
+              getPath(['dashboard', 'trainingPlan']) + `/${athlete.athleteId}`,
+            icon: Target,
+          },
+          {
             title: m.statistics(),
             url: getPath(['dashboard', 'statistics']) + `/${athlete.athleteId}`,
             icon: PieChart,
@@ -112,6 +119,12 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         title: m.calendar(),
         url: getPath(['dashboard', 'calendar']),
         icon: Calendar,
+        spaces: ['ATHLETE'] as UserRole[],
+      },
+      {
+        title: m.training_plan(),
+        url: getPath(['dashboard', 'trainingPlan']),
+        icon: Target,
         spaces: ['ATHLETE'] as UserRole[],
       },
       {

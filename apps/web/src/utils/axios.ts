@@ -172,6 +172,25 @@ export const routes = {
     getCycle: (cycleId: number) => `/cycle/${cycleId}`,
     deleteCycle: (cycleId: number) => `/cycle/${cycleId}`,
   },
+  trainingPlan: {
+    preview: '/training-plan/preview',
+    create: '/training-plan',
+    list: '/training-plan',
+    current: '/training-plan/current',
+    get: (trainingPlanId: number) => `/training-plan/${trainingPlanId}`,
+    adjustments: (trainingPlanId: number) =>
+      `/training-plan/${trainingPlanId}/adjustments`,
+    update: (trainingPlanId: number) => `/training-plan/${trainingPlanId}`,
+    remove: (trainingPlanId: number) => `/training-plan/${trainingPlanId}`,
+  },
+  athleteAvailability: {
+    get: '/athlete-availability',
+    set: '/athlete-availability',
+  },
+  activityFiles: {
+    preview: '/activity-files/preview',
+    import: '/activity-files/import',
+  },
   aiFeatures: {
     generateEvent: '/agent/ai/events/generate',
     modifyEvent: '/agent/ai/events/modify',

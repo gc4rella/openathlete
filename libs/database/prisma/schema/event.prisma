@@ -71,6 +71,12 @@ model EventTraining {
   goalRpe           Float?    @map("goal_rpe")
   /// Estimated training load (TRIMP) for this session (optional)
   estimatedLoad     Float?    @map("estimated_load")
+  /// Whether the athlete/coach hand-edited this session.
+  /// The plan adaptation engine never overwrites a manually edited session.
+  adaptationBaseline Json? @map("adaptation_baseline")
+  adaptationScale Float @default(1) @map("adaptation_scale")
+  adaptationSeverity Int @default(0) @map("adaptation_severity")
+  manuallyEdited    Boolean   @default(false) @map("manually_edited")
 
   // relationships
   event             Event          @relation(fields: [eventId], references: [eventId])
@@ -143,6 +149,7 @@ model EventActivity {
 
   // fields
   /// Provider from which this activity was imported (null if manually created)
+  importMetadata         Json? @map("import_metadata")
   provider               ConnectorProvider?
   /// Total distance in meters
   distance               Float

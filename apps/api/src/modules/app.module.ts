@@ -20,6 +20,7 @@ import { AgentModule } from './agent/agent.module';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth';
 import { CalendarModule } from './calendar/calendar.module';
+import { CoachModule } from './coach/coach.module';
 import { CoreModule } from './core';
 import { MessagesModule } from './messages/messages.module';
 import { NotificationModule } from './notification';
@@ -54,6 +55,7 @@ import { SubscriptionModule } from './subscription';
     SentryModule.forRoot(),
     AuthModule,
     CoreModule,
+    CoachModule,
     AgentModule,
     MessagesModule,
     CalendarModule,

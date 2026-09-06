@@ -8,9 +8,6 @@ export function useLanguageSync() {
 
   const syncLanguage = useCallback(
     async (lang: 'en' | 'fr' | 'it') => {
-      // Update locale in frontend
-      setLocale(lang);
-
       // Sync with backend if authenticated
       if (authenticated) {
         try {
@@ -20,6 +17,9 @@ export function useLanguageSync() {
           console.error('Failed to sync language with backend:', error);
         }
       }
+
+      // setLocale reloads the page; persist the preference before navigating.
+      setLocale(lang);
     },
     [authenticated],
   );

@@ -359,6 +359,17 @@ enum CyclePhase {
   @@map("cycle_phase")
 }
 
+enum PlanAdjustmentTrigger {
+  LOAD_SPIKE // ACWR / TSB indicates too much acute load
+  LOW_COMPLETION // athlete missed a significant share of planned sessions
+  INJURY // an open injury requires reducing impact
+  RPE_OVERSHOOT // sessions felt consistently harder than targeted
+  UNDERLOAD // athlete is comfortably under target and can progress faster
+  MANUAL // athlete or coach changed the plan themselves
+
+  @@map("plan_adjustment_trigger")
+}
+
 enum AvailabilityPriority {
   LOW
   MEDIUM

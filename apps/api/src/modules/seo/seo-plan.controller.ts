@@ -21,7 +21,7 @@ import {
 
 import { JwtUser } from '../auth';
 import { AuthUser } from '../auth/decorators/user.decorator';
-import { TrainingPlanService } from '../core/services/training-plan.service';
+import { TrainingPlanService } from '../coach/services/training-plan.service';
 import { SeoPlanService } from './seo-plan.service';
 
 @ApiTags('SEO Plan')
@@ -158,7 +158,7 @@ export class SeoPlanController {
     const planData = await this.seoPlanService.getTemporaryPlan(token);
 
     // Import the plan
-    const trainingPlan = await this.trainingPlanService.importSeoPlan(
+    const trainingPlan = await this.trainingPlanService.importPlan(
       user,
       planData,
       body.startDate,

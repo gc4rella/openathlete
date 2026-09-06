@@ -1405,7 +1405,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "MARATHON DAY",
               "sport": "RUNNING",
               "description": "The big day! Start cautiously (7:50/km). Enjoy the atmosphere.",

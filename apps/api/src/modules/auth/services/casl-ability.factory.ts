@@ -8,9 +8,13 @@ import {
   AgentMessageBlock,
   AgentThread,
   Athlete,
+  AthleteAvailability,
   AthleteMetric,
   Cycle,
   Event,
+  TrainingPlan,
+  TrainingPlanAdjustment,
+  TrainingWeek,
   User,
   Workout,
 } from '@openathlete/database';
@@ -24,9 +28,13 @@ export type Subjects = CASLSubjects<{
   User: User;
   Athlete: Athlete;
   AthleteMetric: AthleteMetric;
+  AthleteAvailability: AthleteAvailability;
   Event: Event;
   Cycle: Cycle;
   Workout: Workout;
+  TrainingPlan: TrainingPlan;
+  TrainingWeek: TrainingWeek;
+  TrainingPlanAdjustment: TrainingPlanAdjustment;
   AgentThread: AgentThread;
   AgentMessage: AgentMessage;
   AgentMessageBlock: AgentMessageBlock;
@@ -57,8 +65,18 @@ export class CaslAbilityFactory {
       can('manage', 'Event', { athleteId: user.athlete.athleteId });
       can('manage', 'Cycle', { athleteId: user.athlete.athleteId });
       can('manage', 'AthleteMetric', { athleteId: user.athlete.athleteId });
+      can('manage', 'AthleteAvailability', {
+        athleteId: user.athlete.athleteId,
+      });
       can('manage', 'Workout', {
         eventTraining: { event: { athleteId: user.athlete.athleteId } },
+      });
+      can('manage', 'TrainingPlan', { athleteId: user.athlete.athleteId });
+      can('manage', 'TrainingWeek', {
+        cycle: { athleteId: user.athlete.athleteId },
+      });
+      can('manage', 'TrainingPlanAdjustment', {
+        trainingPlan: { athleteId: user.athlete.athleteId },
       });
     }
 
@@ -68,10 +86,20 @@ export class CaslAbilityFactory {
         can('manage', 'AthleteMetric', {
           athleteId: coachAthlete.athleteId,
         });
+        can('manage', 'AthleteAvailability', {
+          athleteId: coachAthlete.athleteId,
+        });
         can('manage', 'Event', { athleteId: coachAthlete.athleteId });
         can('manage', 'Cycle', { athleteId: coachAthlete.athleteId });
         can('manage', 'Workout', {
           eventTraining: { event: { athleteId: coachAthlete.athleteId } },
+        });
+        can('manage', 'TrainingPlan', { athleteId: coachAthlete.athleteId });
+        can('manage', 'TrainingWeek', {
+          cycle: { athleteId: coachAthlete.athleteId },
+        });
+        can('manage', 'TrainingPlanAdjustment', {
+          trainingPlan: { athleteId: coachAthlete.athleteId },
         });
       });
     }

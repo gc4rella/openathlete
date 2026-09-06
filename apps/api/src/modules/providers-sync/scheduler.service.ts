@@ -111,6 +111,7 @@ export class ProviderExportScheduler {
       try {
         const events = await this.prisma.event.findMany({
           where: {
+            OR: [{ trainingWeekId: null }, { trainingWeek: { cycle: { trainingPlan: { status: "ACTIVE" } } } }],
             athleteId: athleteId,
             type: 'TRAINING',
             startDate: {

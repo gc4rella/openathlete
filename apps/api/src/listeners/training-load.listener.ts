@@ -1,9 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 
 import { TrainingLoadCalculationType } from '@openathlete/database';
 
-import { ActivityImportedEvent } from 'src/events';
+import {
+  ActivityImportedEvent,
+  PlanAdaptationRequestedEvent,
+} from 'src/events';
 import { PrismaService } from 'src/modules/prisma/services/prisma.service';
 
 import { TrainingLoadService } from '../modules/core/services/training-load.service';
@@ -18,6 +21,7 @@ export class TrainingLoadListener {
   constructor(
     private readonly trainingLoadService: TrainingLoadService,
     private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -156,6 +160,17 @@ export class TrainingLoadListener {
           );
         }
       }
+
+      // The athlete's load picture just changed. If they are following a plan,
+      // let the adaptation engine look at the upcoming week now rather than
+      // waiting for the weekly pass.
+      if (!event.payload.bulkImport) this.eventEmitter.emit(
+        PlanAdaptationRequestedEvent.SLUG,
+        new PlanAdaptationRequestedEvent({
+          athleteId,
+          reason: 'training-load-updated',
+        }),
+      );
     } catch (error) {
       this.logger.error(
         `Error processing training load for activity ${eventActivityId}:`,

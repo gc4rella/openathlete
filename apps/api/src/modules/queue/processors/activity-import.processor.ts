@@ -110,7 +110,7 @@ export class ActivityImportProcessor extends WorkerHost {
         where: { eventActivityId: savedActivity.eventActivityId },
         select: {
           stream: true,
-          event: { select: { athleteId: true } },
+          event: { select: { athleteId: true, startDate: true } },
           provider: true,
         },
       });
@@ -129,7 +129,7 @@ export class ActivityImportProcessor extends WorkerHost {
                 ...record,
                 eventActivityId: savedActivity.eventActivityId,
                 athleteId: activityWithStream.event.athleteId!,
-                date: new Date(),
+                date: activityWithStream.event.startDate,
               })),
               skipDuplicates: true,
             });

@@ -1,7 +1,7 @@
 import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 
-import { qnaAgent } from './agents';
+import { planCoachAgent, qnaAgent } from './agents';
 import { createMastraMemory } from './config/memory.config';
 import { MastraToolContext } from './config/tool-context';
 
@@ -29,7 +29,12 @@ ROUTING RULES:
    - Keywords: "my activities", "my runs", "how many km", "when can I train", "show me"
    - The qnaAgent fetches REAL data from database
 
-2. "General coaching education" → Answer directly
+2. "Anything about their training plan" → planCoachAgent
+   - Keywords: "my plan", "my race", "next session", "this week", "why did my plan change",
+     "move my session", "reschedule", "skip", "I can't train on..."
+   - The planCoachAgent reads the real plan and can move or skip sessions
+
+3. "General coaching education" → Answer directly
    - Examples: "What is tempo?", "How to warm up?", "Explain zones"
    - BUT if they ask about THEIR data, use qnaAgent
 
@@ -42,6 +47,7 @@ Keep it simple. Your job is routing, not coaching.`,
     model: openai('gpt-4o'),
     agents: {
       qnaAgent,
+      planCoachAgent,
     },
     memory,
   });

@@ -109,7 +109,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Long Run",
               "sport": "RUNNING",
               "description": "Key session of the week. Slow, conversational pace.",
@@ -227,7 +227,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Long Run",
               "sport": "RUNNING",
               "description": "Increasing the duration of the long run.",
@@ -412,7 +412,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Long Run",
               "sport": "RUNNING",
               "description": "Long run of 1h30.",
@@ -519,7 +519,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Shortened Long Run",
               "sport": "RUNNING",
               "description": "Only 1h00 to recover.",
@@ -645,7 +645,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Long Run 1h40",
               "sport": "RUNNING",
               "description": "Returning to longer durations.",
@@ -763,7 +763,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Long Run 1h45",
               "sport": "RUNNING",
               "description": "Mostly fundamental endurance.",
@@ -881,7 +881,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Long Run 1h50",
               "sport": "RUNNING",
               "description": "Reaching 1h50.",
@@ -999,7 +999,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Light Long Run",
               "sport": "RUNNING",
               "description": "Only 1h15.",
@@ -1117,7 +1117,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Long Run 2h00",
               "sport": "RUNNING",
               "description": "Crossing the 2h mark. It's a psychological milestone!",
@@ -1215,7 +1215,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Long Run 2h15",
               "sport": "RUNNING",
               "description": "Progressive increase.",
@@ -1333,7 +1333,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Max Long Run 2h30",
               "sport": "RUNNING",
               "description": "The biggest run of the plan (or 2h40 max if feeling good). Test nutrition.",
@@ -1451,7 +1451,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Long Run 2h15",
               "sport": "RUNNING",
               "description": "Last very long run.",
@@ -1577,7 +1577,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Long Run 1h45",
               "sport": "RUNNING",
               "description": "Reducing duration.",
@@ -1695,7 +1695,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Long Run 1h15",
               "sport": "RUNNING",
               "description": "Last run over an hour.",
@@ -1853,7 +1853,7 @@
           "theme": "Race Day",
           "sessions": [
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "MARATHON",
               "sport": "RUNNING",
               "description": "The big day! Goal 5h00. Start conservatively (7:10/km) and be consistent.",

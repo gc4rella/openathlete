@@ -109,7 +109,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Sortie Longue",
               "sport": "RUNNING",
               "description": "La séance clé de la semaine. Allure lente et conversationnelle.",
@@ -227,7 +227,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Sortie Longue",
               "sport": "RUNNING",
               "description": "Augmentation de la durée de la sortie longue.",
@@ -412,7 +412,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Sortie Longue",
               "sport": "RUNNING",
               "description": "Sortie longue de 1h30.",
@@ -519,7 +519,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Sortie Longue Allégée",
               "sport": "RUNNING",
               "description": "Seulement 1h00 pour récupérer.",
@@ -645,7 +645,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Sortie Longue 1h40",
               "sport": "RUNNING",
               "description": "On repasse sur des durées longues.",
@@ -763,7 +763,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Sortie Longue 1h45",
               "sport": "RUNNING",
               "description": "Endurance fondamentale majoritairement.",
@@ -881,7 +881,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Sortie Longue 1h50",
               "sport": "RUNNING",
               "description": "Cap des 1h50.",
@@ -999,7 +999,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Sortie Longue allégée",
               "sport": "RUNNING",
               "description": "1h15 seulement.",
@@ -1117,7 +1117,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Sortie Longue 2h00",
               "sport": "RUNNING",
               "description": "Passage des 2h. C'est un cap psychologique !",
@@ -1215,7 +1215,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Sortie Longue 2h15",
               "sport": "RUNNING",
               "description": "Augmentation progressive.",
@@ -1333,7 +1333,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Sortie Longue Max 2h30",
               "sport": "RUNNING",
               "description": "La plus grosse sortie du plan (ou 2h40 max si bonne forme). Tester ravitaillement.",
@@ -1451,7 +1451,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Sortie Longue 2h15",
               "sport": "RUNNING",
               "description": "Dernière très longue sortie.",
@@ -1577,7 +1577,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Sortie Longue 1h45",
               "sport": "RUNNING",
               "description": "On réduit la durée.",
@@ -1695,7 +1695,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "Sortie Longue 1h15",
               "sport": "RUNNING",
               "description": "Dernière sortie de plus d'une heure.",
@@ -1853,7 +1853,7 @@
           "theme": "Jour de course",
           "sessions": [
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "MARATHON",
               "sport": "RUNNING",
               "description": "C'est le grand jour ! Objectif 5h00. Pars prudemment (7:10/km) et sois régulier.",

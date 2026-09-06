@@ -1405,7 +1405,7 @@
               }
             },
             {
-              "dayOfWeek": 7,
+              "dayOfWeek": 0,
               "name": "JOUR DU MARATHON",
               "sport": "RUNNING",
               "description": "C'est le grand jour ! Partez prudemment (7:50/km). Profitez de l'ambiance.",

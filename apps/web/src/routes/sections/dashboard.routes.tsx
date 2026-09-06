@@ -104,6 +104,18 @@ const OnboardingPage = lazy(() =>
   })),
 );
 
+const TrainingPlanPage = lazy(() =>
+  import('@/pages/dashboard/training-plan').then((module) => ({
+    default: module.TrainingPlanPage,
+  })),
+);
+
+const AthleteTrainingPlanPage = lazy(() =>
+  import('@/pages/dashboard/training-plan/athlete').then((module) => ({
+    default: module.AthleteTrainingPlanPage,
+  })),
+);
+
 export const dashboardRoutes: RouteObject[] = [
   {
     path: getPath(['dashboard']),
@@ -133,6 +145,14 @@ export const dashboardRoutes: RouteObject[] = [
       {
         path: getPath(['dashboard', 'calendar', 'athleteId']),
         element: <AthleteCalendarPage />,
+      },
+      {
+        path: getPath(['dashboard', 'trainingPlan']),
+        element: <TrainingPlanPage />,
+      },
+      {
+        path: getPath(['dashboard', 'trainingPlan', 'athleteId']),
+        element: <AthleteTrainingPlanPage />,
       },
       {
         path: getPath(['dashboard', 'summary', 'athleteId']),

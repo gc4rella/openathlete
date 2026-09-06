@@ -100,7 +100,7 @@ export class EventService {
       training: EventTraining | null;
       note: EventNote | null;
       activity:
-        | (Omit<EventActivity, 'stream'> & {
+        | (Omit<EventActivity, 'stream' | 'importMetadata'> & {
             segments?: ActivitySegment[];
             feedbackQuestions?: Array<{
               activityFeedbackQuestionId: number;
@@ -253,6 +253,7 @@ export class EventService {
             athleteId: { not: null },
           },
           dateFilter,
+          { OR: [{ trainingWeekId: null }, { trainingWeek: { cycle: { trainingPlan: { status: "ACTIVE" } } } }, { startDate: { lt: new Date() } }] },
         ],
       },
       include: EVENT_INCLUDES,
@@ -431,6 +432,7 @@ export class EventService {
     const updatedEvent = await this.prisma.event.update({
       where: { eventId: eventId },
       data: {
+        ...(event.training && { training: { update: { manuallyEdited: true } } }),
         startDate,
         endDate,
         name,
@@ -438,7 +440,7 @@ export class EventService {
         ...(type
           ? {
               [type.toLocaleLowerCase()]: {
-                update: rest,
+                update: { ...rest, ...(type === EVENT_TYPE.TRAINING ? { manuallyEdited: true } : {}) },
               },
             }
           : {}),
@@ -1264,7 +1266,7 @@ export class EventService {
       competition: EventCompetition | null;
       training: EventTraining | null;
       note: EventNote | null;
-      activity: Omit<EventActivity, 'stream'> | null;
+      activity: Omit<EventActivity, 'stream' | 'importMetadata'> | null;
     },
   ): Promise<boolean> {
     if (!event.athleteId) return true; // No athlete, consider validated

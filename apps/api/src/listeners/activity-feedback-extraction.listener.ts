@@ -1,11 +1,14 @@
 import { openai } from '@ai-sdk/openai';
 
 import { Injectable, Logger } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 
 import { Prisma } from '@openathlete/database';
 
-import { ActivityFeedbackCompletedEvent } from 'src/events';
+import {
+  ActivityFeedbackCompletedEvent,
+  PlanAdaptationRequestedEvent,
+} from 'src/events';
 import { extractInjuryAgent, extractRpeAgent } from 'src/mastra/agents';
 import { CalendarWebSocketService } from 'src/modules/calendar/services/calendar-websocket.service';
 import { PrismaService } from 'src/modules/prisma/services/prisma.service';
@@ -19,6 +22,7 @@ export class ActivityFeedbackExtractionListener {
   constructor(
     private readonly prisma: PrismaService,
     private readonly calendarWebSocketService: CalendarWebSocketService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   @OnEvent(ActivityFeedbackCompletedEvent.SLUG, { async: true })
@@ -241,6 +245,17 @@ export class ActivityFeedbackExtractionListener {
           }
           this.logger.log(
             `✓ Stored ${injuries.length} injuries for activity ${eventActivityId}`,
+          );
+
+          // A reported injury is the one signal that must not wait for the
+          // weekly adaptation pass: ask for the upcoming week to be reviewed
+          // now, before the athlete runs on it.
+          this.eventEmitter.emit(
+            PlanAdaptationRequestedEvent.SLUG,
+            new PlanAdaptationRequestedEvent({
+              athleteId,
+              reason: 'injury-reported',
+            }),
           );
         }
 

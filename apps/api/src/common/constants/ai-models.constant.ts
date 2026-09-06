@@ -58,3 +58,13 @@ export const QNA_MODEL = process.env.AI_MODEL_QNA || 'openai/gpt-4o';
  */
 export const TRIMP_ESTIMATION_MODEL =
   process.env.AI_MODEL_TRIMP_ESTIMATION || 'openai/gpt-5.1';
+
+/**
+ * Model for the plan narrative agent
+ *
+ * Writes the prose of a generated training plan. The plan itself is computed
+ * deterministically; this model never sees or produces a training number.
+ * Fallback: 'openai/gpt-5.1'
+ */
+export const PLAN_NARRATIVE_MODEL =
+  process.env.AI_MODEL_PLAN_NARRATIVE || 'openai/gpt-5.1';
