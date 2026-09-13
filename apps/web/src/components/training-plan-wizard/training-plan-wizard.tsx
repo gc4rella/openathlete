@@ -4,19 +4,24 @@ import {
 } from '@/api/athlete-availability';
 import {
   PlanPreview as PlanPreviewData,
+  useChatGptPlannerLoginMutation,
+  useChatGptPlannerProviderQuery,
   useCreateTrainingPlanMutation,
   usePreviewTrainingPlanMutation,
+  useTrainingPlanIntakeMutation,
 } from '@/api/training-plan';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Loader } from '@/components/ui/loader';
 import {
   Select,
   SelectContent,
@@ -24,19 +29,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { m } from '@/paraglide/messages';
-import { useEffect, useMemo, useState } from 'react';
+import { getLocale } from '@/paraglide/runtime';
+import { Bot, ExternalLink, Send, Sparkles, UserRound } from 'lucide-react';
+import { KeyboardEvent, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import {
   AthleteAvailabilitySlot,
   PLAN_GOAL_KIND,
   PlanGenerationInput,
+  PlanIntakeDraft,
+  PlanIntakeMessage,
   SPORT_TYPE,
 } from '@openathlete/shared';
 
 import { AvailabilityGridField } from './availability-grid';
-import { RACE_DISTANCES, formatDateInput, parseFinishTime } from './format';
+import {
+  RACE_DISTANCES,
+  formatDateInput,
+  formatFinishTime,
+  parseFinishTime,
+} from './format';
 import { PlanPreview } from './plan-preview';
 
 /**
@@ -50,7 +65,7 @@ import { PlanPreview } from './plan-preview';
  * single row is written to their calendar.
  */
 
-type Step = 'goal' | 'schedule' | 'preview';
+type Step = 'chat' | 'goal' | 'schedule' | 'preview';
 
 const DAY_OPTIONS = [
   { value: '0', label: 'Sunday' },
@@ -76,8 +91,11 @@ export function TrainingPlanWizard({
   athleteId,
   suggestedWeeklyVolume,
 }: Props) {
-  const [step, setStep] = useState<Step>('goal');
+  const [step, setStep] = useState<Step>('chat');
   const [preview, setPreview] = useState<PlanPreviewData | null>(null);
+  const [intakeMessages, setIntakeMessages] = useState<PlanIntakeMessage[]>([]);
+  const [intakeText, setIntakeText] = useState('');
+  const [intakeDraft, setIntakeDraft] = useState<PlanIntakeDraft | null>(null);
 
   const [goalKind, setGoalKind] = useState<PLAN_GOAL_KIND>(PLAN_GOAL_KIND.RACE);
   const [targetDistance, setTargetDistance] = useState('42195');
@@ -90,12 +108,21 @@ export function TrainingPlanWizard({
   const [weeklyHours, setWeeklyHours] = useState('');
   const [injuryAware, setInjuryAware] = useState(true);
   const [includeCrossTraining, setIncludeCrossTraining] = useState(false);
+  const [planName, setPlanName] = useState<string | null>(null);
   const [availability, setAvailability] = useState<AthleteAvailabilitySlot[]>(
     [],
   );
 
   const { data: existingAvailability } = useAthleteAvailabilityQuery(athleteId);
   const setAvailabilityMutation = useSetAthleteAvailabilityMutation();
+  const plannerLoginMutation = useChatGptPlannerLoginMutation({
+    onError: (error) => toast.error(planIntakeError(error.message)),
+  });
+  const plannerProviderQuery = useChatGptPlannerProviderQuery(
+    open,
+    plannerLoginMutation.isSuccess,
+  );
+  const plannerConnected = plannerProviderQuery.data?.connected === true;
 
   // Start from what the athlete already told us, and from what they have
   // actually been running, rather than from an empty form.
@@ -148,7 +175,7 @@ export function TrainingPlanWizard({
       currentWeeklyVolume: Number.isFinite(hours) ? hours * 3600 : null,
       includeCrossTraining,
       injuryAware,
-      planName: null,
+      planName,
     };
   }, [
     goalKind,
@@ -162,7 +189,19 @@ export function TrainingPlanWizard({
     weeklyHours,
     includeCrossTraining,
     injuryAware,
+    planName,
   ]);
+
+  const intakeMutation = useTrainingPlanIntakeMutation({
+    onSuccess: (data) => {
+      setIntakeDraft(data.draft);
+      setIntakeMessages((messages) => [
+        ...messages,
+        { role: 'assistant', content: data.message },
+      ]);
+    },
+    onError: (error) => toast.error(planIntakeError(error.message)),
+  });
 
   const previewMutation = usePreviewTrainingPlanMutation({
     onSuccess: (data) => {
@@ -181,9 +220,65 @@ export function TrainingPlanWizard({
   });
 
   const handleClose = () => {
-    setStep('goal');
+    setStep('chat');
     setPreview(null);
+    setIntakeMessages([]);
+    setIntakeText('');
+    setIntakeDraft(null);
+    plannerLoginMutation.reset();
     onClose();
+  };
+
+  const sendIntakeMessage = () => {
+    const content = intakeText.trim();
+    if (!content || intakeMutation.isPending) return;
+
+    const messages: PlanIntakeMessage[] = [
+      ...intakeMessages,
+      { role: 'user', content },
+    ];
+    setIntakeMessages(messages);
+    setIntakeText('');
+    intakeMutation.mutate({
+      body: {
+        messages,
+        language: getLocale().toUpperCase() as 'EN' | 'FR' | 'IT',
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      },
+      athleteId,
+    });
+  };
+
+  const applyIntakeDraft = () => {
+    if (!intakeDraft) return;
+
+    if (intakeDraft.goalKind) setGoalKind(intakeDraft.goalKind);
+    if (intakeDraft.startDate) setStartDate(intakeDraft.startDate);
+    if (intakeDraft.raceDate) setRaceDate(intakeDraft.raceDate);
+    if (intakeDraft.targetDistance)
+      setTargetDistance(String(intakeDraft.targetDistance));
+    setGoalTime(
+      intakeDraft.targetTime ? formatFinishTime(intakeDraft.targetTime) : '',
+    );
+    if (intakeDraft.durationWeeks)
+      setDurationWeeks(String(intakeDraft.durationWeeks));
+    if (intakeDraft.daysPerWeek)
+      setDaysPerWeek(String(intakeDraft.daysPerWeek));
+    if (intakeDraft.longRunDay !== null)
+      setLongRunDay(String(intakeDraft.longRunDay));
+    if (intakeDraft.currentWeeklyVolume)
+      setWeeklyHours((intakeDraft.currentWeeklyVolume / 3600).toFixed(1));
+    setIncludeCrossTraining(intakeDraft.includeCrossTraining);
+    setInjuryAware(intakeDraft.injuryAware);
+    setPlanName(intakeDraft.planName);
+    setStep('schedule');
+  };
+
+  const handleIntakeKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      sendIntakeMessage();
+    }
   };
 
   const generate = async () => {
@@ -193,8 +288,14 @@ export function TrainingPlanWizard({
     }
 
     try {
-      await setAvailabilityMutation.mutateAsync({ body: { slots: availability }, athleteId });
-    } catch { toast.error(m.training_plan_generate_failed()); return; }
+      await setAvailabilityMutation.mutateAsync({
+        body: { slots: availability },
+        athleteId,
+      });
+    } catch {
+      toast.error(m.training_plan_generate_failed());
+      return;
+    }
 
     previewMutation.mutate({ input, athleteId, skipNarrative: true });
   };
@@ -217,7 +318,148 @@ export function TrainingPlanWizard({
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{m.training_plan_wizard_title()}</DialogTitle>
+          <DialogDescription className="sr-only">
+            {m.training_plan_none_description()}
+          </DialogDescription>
         </DialogHeader>
+
+        {step === 'chat' && (
+          <div className="space-y-4">
+            <div className="rounded-lg border bg-muted/30 p-3 text-sm">
+              <div className="mb-1 flex items-center gap-2 font-medium">
+                <Sparkles className="h-4 w-4 text-primary" />
+                {m.training_plan_ai_title()}
+              </div>
+              <p className="text-muted-foreground">
+                {m.training_plan_ai_description()}
+              </p>
+            </div>
+
+            {!plannerConnected && (
+              <div className="space-y-3 rounded-lg border p-3 text-sm">
+                <p className="font-medium">
+                  {m.training_plan_chatgpt_connect_title()}
+                </p>
+                <p className="text-muted-foreground">
+                  {plannerProviderMessage(plannerProviderQuery.data)}
+                </p>
+
+                {plannerLoginMutation.data ? (
+                  <div className="space-y-2">
+                    <div className="rounded-md bg-muted px-3 py-2 text-center font-mono text-lg font-semibold tracking-widest">
+                      {plannerLoginMutation.data.userCode}
+                    </div>
+                    <Button asChild type="button" className="w-full">
+                      <a
+                        href={plannerLoginMutation.data.verificationUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {m.training_plan_chatgpt_open_login()}
+                        <ExternalLink className="ml-2 h-4 w-4" />
+                      </a>
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      {m.training_plan_chatgpt_waiting()}
+                    </p>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={() => plannerLoginMutation.mutate()}
+                    disabled={
+                      plannerProviderQuery.isPending ||
+                      plannerLoginMutation.isPending ||
+                      !plannerProviderQuery.data?.enabled ||
+                      !plannerProviderQuery.data?.available
+                    }
+                  >
+                    {plannerLoginMutation.isPending && (
+                      <Loader size="sm" className="mr-2" />
+                    )}
+                    {m.training_plan_chatgpt_connect()}
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {plannerConnected && (
+              <p className="text-xs text-muted-foreground">
+                {m.training_plan_chatgpt_connected({
+                  plan: plannerProviderQuery.data?.planType || 'ChatGPT',
+                })}
+              </p>
+            )}
+
+            <div
+              className="max-h-[38vh] min-h-52 space-y-3 overflow-y-auto rounded-lg border p-3"
+              aria-live="polite"
+            >
+              <ChatMessage
+                role="assistant"
+                content={m.training_plan_ai_greeting()}
+              />
+              {intakeMessages.map((message, index) => (
+                <ChatMessage
+                  key={`${message.role}-${index}`}
+                  role={message.role}
+                  content={message.content}
+                />
+              ))}
+              {intakeMutation.isPending && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader size="sm" /> {m.training_plan_ai_thinking()}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-end gap-2">
+              <Textarea
+                value={intakeText}
+                onChange={(event) => setIntakeText(event.target.value)}
+                onKeyDown={handleIntakeKeyDown}
+                placeholder={m.training_plan_ai_placeholder()}
+                disabled={intakeMutation.isPending || !plannerConnected}
+                className="max-h-32 min-h-16 resize-none"
+              />
+              <Button
+                type="button"
+                size="icon"
+                className="h-16 w-16 shrink-0"
+                onClick={sendIntakeMessage}
+                disabled={
+                  !plannerConnected ||
+                  !intakeText.trim() ||
+                  intakeMutation.isPending
+                }
+                aria-label={m.training_plan_ai_send()}
+              >
+                <Send className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setStep('goal')}
+              >
+                {m.training_plan_manual_setup()}
+              </Button>
+              <Button
+                type="button"
+                onClick={applyIntakeDraft}
+                disabled={
+                  intakeMutation.isPending ||
+                  !intakeDraft ||
+                  !intakeMutation.data?.ready
+                }
+              >
+                {m.training_plan_review_details()}
+              </Button>
+            </div>
+          </div>
+        )}
 
         {step === 'goal' && (
           <div className="space-y-4">
@@ -259,6 +501,15 @@ export function TrainingPlanWizard({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      {!RACE_DISTANCES.some(
+                        (distance) =>
+                          String(distance.meters) === targetDistance,
+                      ) &&
+                        Number(targetDistance) > 0 && (
+                          <SelectItem value={targetDistance}>
+                            {Number(targetDistance) / 1000} km
+                          </SelectItem>
+                        )}
                       {RACE_DISTANCES.map((distance) => (
                         <SelectItem
                           key={distance.meters}
@@ -449,8 +700,69 @@ export function TrainingPlanWizard({
 }
 
 function planError(message: string) {
-  if (message.includes('BASELINE_REQUIRED')) return 'Add recent weekly training volume before generating a marathon plan.';
-  if (message.includes('AVAILABILITY_CONFLICT')) return 'Your training days do not fit the availability windows you entered.';
-  if (message.includes('PREPARATION_TOO_SHORT')) return 'A race plan needs at least four weeks of preparation.';
+  if (message.includes('BASELINE_REQUIRED'))
+    return 'Add recent weekly training volume before generating a marathon plan.';
+  if (message.includes('AVAILABILITY_CONFLICT'))
+    return 'Your training days do not fit the availability windows you entered.';
+  if (message.includes('PREPARATION_TOO_SHORT'))
+    return 'A race plan needs at least four weeks of preparation.';
   return message || m.training_plan_generate_failed();
+}
+
+function planIntakeError(message: string) {
+  if (message.includes('CHATGPT_PLANNER_DISABLED'))
+    return m.training_plan_chatgpt_disabled();
+  if (message.includes('CHATGPT_PLANNER_RUNTIME_UNAVAILABLE'))
+    return m.training_plan_chatgpt_runtime_unavailable();
+  if (message.includes('CHATGPT_PLANNER_AUTH_REQUIRED'))
+    return m.training_plan_chatgpt_auth_required();
+  return message || m.training_plan_ai_failed();
+}
+
+function plannerProviderMessage(
+  status:
+    | {
+        enabled: boolean;
+        available: boolean;
+      }
+    | undefined,
+) {
+  if (!status) return m.training_plan_chatgpt_checking();
+  if (!status.enabled) return m.training_plan_chatgpt_disabled();
+  if (!status.available) return m.training_plan_chatgpt_runtime_unavailable();
+  return m.training_plan_chatgpt_connect_description();
+}
+
+function ChatMessage({
+  role,
+  content,
+}: {
+  role: PlanIntakeMessage['role'];
+  content: string;
+}) {
+  const assistant = role === 'assistant';
+
+  return (
+    <div
+      className={`flex gap-2 ${assistant ? 'justify-start' : 'justify-end'}`}
+    >
+      {assistant && (
+        <div className="mt-1 rounded-full bg-primary/10 p-1.5 text-primary">
+          <Bot className="h-4 w-4" />
+        </div>
+      )}
+      <div
+        className={`max-w-[85%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm ${
+          assistant ? 'bg-muted' : 'bg-primary text-primary-foreground'
+        }`}
+      >
+        {content}
+      </div>
+      {!assistant && (
+        <div className="mt-1 rounded-full bg-muted p-1.5">
+          <UserRound className="h-4 w-4" />
+        </div>
+      )}
+    </div>
+  );
 }

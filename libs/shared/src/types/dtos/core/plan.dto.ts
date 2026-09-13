@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { isTimeZone } from '../../../utils/calendar-date';
 
+import { isTimeZone } from '../../../utils/calendar-date';
 import {
   AVAILABILITY_PRIORITY,
   CYCLE_PHASE,
@@ -33,7 +33,10 @@ export const elevationGainRangeSchema = z.object({
 export type ElevationGainRange = z.infer<typeof elevationGainRangeSchema>;
 
 export const planSessionSchema = z.object({
-  scheduledDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  scheduledDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
   dayOfWeek: z.number().min(0).max(6), // 0-6 (sunday-saturday)
   name: z.string().min(1),
   sport: z.nativeEnum(SPORT_TYPE),
@@ -124,7 +127,7 @@ export const planGenerationInputSchema = z
     language: z.enum(['EN', 'FR', 'IT']).optional(),
     sport: z.nativeEnum(SPORT_TYPE).default(SPORT_TYPE.RUNNING),
     /// First day of the plan
-    timeZone: z.string().refine(isTimeZone, "Invalid time zone").default("UTC"),
+    timeZone: z.string().refine(isTimeZone, 'Invalid time zone').default('UTC'),
     recentLongestRun: z.number().positive().optional().nullable(),
     startDate: z.coerce.date(),
     /// Race day (required when goalKind is RACE)
@@ -178,6 +181,93 @@ export const planGenerationInputSchema = z
   );
 
 export type PlanGenerationInput = z.infer<typeof planGenerationInputSchema>;
+
+// ============================================================================
+// Conversational plan intake
+// ============================================================================
+
+export const planIntakeMessageSchema = z.object({
+  role: z.enum(['user', 'assistant']),
+  content: z.string().trim().min(1).max(4000),
+});
+
+export type PlanIntakeMessage = z.infer<typeof planIntakeMessageSchema>;
+
+export const planIntakeRequestSchema = z
+  .object({
+    messages: z.array(planIntakeMessageSchema).max(30),
+    language: z.enum(['EN', 'FR', 'IT']),
+    timeZone: z.string().refine(isTimeZone, 'Invalid time zone').default('UTC'),
+  })
+  .refine(
+    (request) =>
+      request.messages.reduce(
+        (total, message) => total + message.content.length,
+        0,
+      ) <= 24_000,
+    { message: 'Conversation is too long', path: ['messages'] },
+  );
+
+export type PlanIntakeRequest = z.infer<typeof planIntakeRequestSchema>;
+
+/**
+ * Values gathered by the planning conversation. Dates stay as ISO calendar
+ * strings here so the browser can put them into date inputs without a time-zone
+ * shift. The normal planGenerationInputSchema remains the final authority.
+ */
+export const planIntakeDraftSchema = z.object({
+  goalKind: z.nativeEnum(PLAN_GOAL_KIND).nullable(),
+  startDate: z.string().date().nullable(),
+  raceDate: z.string().date().nullable(),
+  targetDistance: z.number().positive().nullable(),
+  targetTime: z.number().int().positive().nullable(),
+  durationWeeks: z.number().int().min(4).max(52).nullable(),
+  daysPerWeek: z.number().int().min(2).max(7).nullable(),
+  longRunDay: z.number().int().min(0).max(6).nullable(),
+  currentWeeklyVolume: z.number().positive().nullable(),
+  includeCrossTraining: z.boolean(),
+  injuryAware: z.boolean(),
+  planName: z.string().trim().min(1).max(120).nullable(),
+});
+
+export type PlanIntakeDraft = z.infer<typeof planIntakeDraftSchema>;
+
+export const planIntakeResponseSchema = z.object({
+  message: z.string().trim().min(1).max(2000),
+  ready: z.boolean(),
+  missingFields: z.array(z.string().trim().min(1)).max(12),
+  draft: planIntakeDraftSchema,
+});
+
+export type PlanIntakeResponse = z.infer<typeof planIntakeResponseSchema>;
+
+/**
+ * The ChatGPT connection belongs to the OpenAthlete API instance, not to an
+ * individual OpenAthlete account. This matches Codex app-server's managed
+ * authentication model and is intended for personal/self-hosted deployments.
+ */
+export const chatGptPlannerProviderStatusSchema = z.object({
+  provider: z.literal('chatgpt-codex'),
+  scope: z.literal('instance'),
+  enabled: z.boolean(),
+  available: z.boolean(),
+  connected: z.boolean(),
+  planType: z.string().nullable(),
+});
+
+export type ChatGptPlannerProviderStatus = z.infer<
+  typeof chatGptPlannerProviderStatusSchema
+>;
+
+export const chatGptPlannerLoginResponseSchema = z.object({
+  loginId: z.string().min(1),
+  verificationUrl: z.string().url(),
+  userCode: z.string().min(1),
+});
+
+export type ChatGptPlannerLoginResponse = z.infer<
+  typeof chatGptPlannerLoginResponseSchema
+>;
 
 // ============================================================================
 // Training plan CRUD DTOs

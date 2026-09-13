@@ -11,6 +11,7 @@ import {
   type GeneratedPlanData,
   PLAN_STATUS,
   type PlanGenerationInput,
+  type PlanIntakeRequest,
   type SEOPlanData,
   type UpdateTrainingPlanDto,
 } from '@openathlete/shared';
@@ -20,7 +21,9 @@ import { AuthUser } from '../../auth/decorators/user.decorator';
 import { accessibleBy } from '../../auth/services/casl-prisma';
 import { PrismaService } from '../../prisma/services/prisma.service';
 import { GENERATOR_VERSION } from '../engine';
+import { ChatGptPlannerProviderService } from './chatgpt-planner-provider.service';
 import { PlanGenerationService } from './plan-generation.service';
+import { PlanIntakeService } from './plan-intake.service';
 import { PlanMaterializationService } from './plan-materialization.service';
 import { PlanNarrativeService } from './plan-narrative.service';
 
@@ -40,7 +43,9 @@ export class TrainingPlanService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly abilities: CaslAbilityFactory,
+    private readonly chatGptPlanner: ChatGptPlannerProviderService,
     private readonly generation: PlanGenerationService,
+    private readonly intakeService: PlanIntakeService,
     private readonly materialization: PlanMaterializationService,
     private readonly narrative: PlanNarrativeService,
   ) {}
@@ -48,6 +53,23 @@ export class TrainingPlanService {
   // ==========================================================================
   // Generation
   // ==========================================================================
+
+  plannerProviderStatus() {
+    return this.chatGptPlanner.status();
+  }
+
+  startPlannerProviderLogin() {
+    return this.chatGptPlanner.startLogin();
+  }
+
+  async intake(user: AuthUser, body: PlanIntakeRequest, athleteId?: number) {
+    return this.intakeService.reply({
+      athleteId: this.resolveAthleteId(user, athleteId),
+      messages: body.messages,
+      language: body.language,
+      timeZone: body.timeZone,
+    });
+  }
 
   /**
    * Generate a plan without persisting anything, so the wizard can show it and
@@ -60,7 +82,7 @@ export class TrainingPlanService {
     skipNarrative = false,
   ) {
     const targetAthleteId = this.resolveAthleteId(user, athleteId);
-    const language = input.language ?? await this.languageFor(user);
+    const language = input.language ?? (await this.languageFor(user));
     const result = await this.generation.generate(
       targetAthleteId,
       input,
@@ -90,7 +112,7 @@ export class TrainingPlanService {
     athleteId?: number,
   ) {
     const targetAthleteId = this.resolveAthleteId(user, athleteId);
-    const language = body.input.language ?? await this.languageFor(user);
+    const language = body.input.language ?? (await this.languageFor(user));
 
     const result = await this.generation.generate(
       targetAthleteId,
@@ -101,7 +123,6 @@ export class TrainingPlanService {
     const planData = body.skipNarrative
       ? result.plan
       : await this.narrative.embellish(user.userId, result.plan, language);
-
 
     return this.materialization.materialize({
       timeZone: body.input.timeZone,
@@ -222,10 +243,25 @@ export class TrainingPlanService {
   ) {
     const plan = await this.assertCanAccess(user, trainingPlanId);
 
-    return this.prisma.$transaction(async tx => {
+    return this.prisma.$transaction(async (tx) => {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(${plan.athleteId})`;
-      if (body.status === PLAN_STATUS.ACTIVE) await tx.trainingPlan.updateMany({ where: { athleteId: plan.athleteId, status: PlanStatus.ACTIVE, trainingPlanId: { not: trainingPlanId } }, data: { status: PlanStatus.ARCHIVED } });
-      return tx.trainingPlan.update({ where: { trainingPlanId }, data: { name: body.name, description: body.description, status: body.status as PlanStatus | undefined } });
+      if (body.status === PLAN_STATUS.ACTIVE)
+        await tx.trainingPlan.updateMany({
+          where: {
+            athleteId: plan.athleteId,
+            status: PlanStatus.ACTIVE,
+            trainingPlanId: { not: trainingPlanId },
+          },
+          data: { status: PlanStatus.ARCHIVED },
+        });
+      return tx.trainingPlan.update({
+        where: { trainingPlanId },
+        data: {
+          name: body.name,
+          description: body.description,
+          status: body.status as PlanStatus | undefined,
+        },
+      });
     });
   }
 

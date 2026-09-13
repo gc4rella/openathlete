@@ -173,6 +173,9 @@ export const routes = {
     deleteCycle: (cycleId: number) => `/cycle/${cycleId}`,
   },
   trainingPlan: {
+    intake: '/training-plan/intake',
+    plannerProvider: '/training-plan/planner-provider',
+    plannerProviderLogin: '/training-plan/planner-provider/login',
     preview: '/training-plan/preview',
     create: '/training-plan',
     list: '/training-plan',

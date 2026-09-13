@@ -6,9 +6,11 @@ import { SubscriptionModule } from '../subscription';
 import { AthleteAvailabilityController } from './controllers/athlete-availability.controller';
 import { TrainingPlanController } from './controllers/training-plan.controller';
 import { AthleteAvailabilityService } from './services/athlete-availability.service';
+import { ChatGptPlannerProviderService } from './services/chatgpt-planner-provider.service';
 import { PlanAdaptationScheduler } from './services/plan-adaptation.scheduler';
 import { PlanAdaptationService } from './services/plan-adaptation.service';
 import { PlanGenerationService } from './services/plan-generation.service';
+import { PlanIntakeService } from './services/plan-intake.service';
 import { PlanMaterializationService } from './services/plan-materialization.service';
 import { PlanNarrativeService } from './services/plan-narrative.service';
 import { TrainingPlanService } from './services/training-plan.service';
@@ -25,7 +27,9 @@ import { TrainingPlanService } from './services/training-plan.service';
   controllers: [TrainingPlanController, AthleteAvailabilityController],
   providers: [
     PrismaService,
+    ChatGptPlannerProviderService,
     PlanGenerationService,
+    PlanIntakeService,
     PlanMaterializationService,
     PlanNarrativeService,
     PlanAdaptationService,

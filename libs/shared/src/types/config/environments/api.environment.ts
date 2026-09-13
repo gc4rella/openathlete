@@ -211,8 +211,10 @@ export const ApiEnvSchema = z
     // AI Services
     OPENAI_API_KEY: z
       .string()
-      .min(1, 'OPENAI_API_KEY is required for AI features')
-      .describe('OpenAI API key for AI-powered features'),
+      .optional()
+      .describe(
+        'Optional OpenAI API key for API-backed AI features; not used by the ChatGPT planner provider',
+      ),
 
     GOOGLE_GENERATIVE_AI_API_KEY: z
       .string()
@@ -230,6 +232,20 @@ export const ApiEnvSchema = z
       .describe(
         'AI model for event modification agent (e.g., gpt-4o, gpt-5.1)',
       ),
+    CHATGPT_PLANNER_ENABLED: z
+      .enum(['true', 'false'])
+      .optional()
+      .describe(
+        'Enable instance-level ChatGPT subscription auth through Codex app-server',
+      ),
+    CODEX_BIN: z
+      .string()
+      .optional()
+      .describe('Codex CLI executable used for the ChatGPT planning provider'),
+    CODEX_PLANNER_MODEL: z
+      .string()
+      .optional()
+      .describe('Optional Codex model override for plan intake'),
     AI_MODEL_EXTRACT_INJURY: z
       .string()
       .optional()

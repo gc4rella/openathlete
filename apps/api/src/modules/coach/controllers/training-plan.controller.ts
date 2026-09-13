@@ -25,9 +25,11 @@ import {
 
 import {
   type CreateTrainingPlanDto,
+  type PlanIntakeRequest,
   type PreviewTrainingPlanDto,
   type UpdateTrainingPlanDto,
   createTrainingPlanDtoSchema,
+  planIntakeRequestSchema,
   previewTrainingPlanDtoSchema,
   updateTrainingPlanDtoSchema,
 } from '@openathlete/shared';
@@ -41,6 +43,36 @@ import { TrainingPlanService } from '../services/training-plan.service';
 @Controller('training-plan')
 export class TrainingPlanController {
   constructor(private readonly trainingPlanService: TrainingPlanService) {}
+
+  @UseGuards(AuthGuard('jwt'), UserTypeGuard)
+  @ApiBearerAuth()
+  @Get('planner-provider')
+  @ApiOperation({
+    summary: 'Read the ChatGPT planning-provider connection status',
+    description:
+      'Reports whether this OpenAthlete instance can use the local Codex runtime and whether that runtime is connected to a ChatGPT subscription. The OAuth session is instance-scoped.',
+  })
+  @ApiResponse({ status: 200, description: 'Provider connection status' })
+  plannerProviderStatus() {
+    return this.trainingPlanService.plannerProviderStatus();
+  }
+
+  @UseGuards(AuthGuard('jwt'), UserTypeGuard)
+  @ApiBearerAuth()
+  @Post('planner-provider/login')
+  @ApiOperation({
+    summary: 'Start ChatGPT device-code authentication for planning',
+    description:
+      'Starts the Codex-managed ChatGPT OAuth flow. OpenAthlete does not receive or store the OAuth tokens.',
+  })
+  @ApiResponse({ status: 201, description: 'Verification URL and user code' })
+  @ApiResponse({
+    status: 503,
+    description: 'Provider is disabled or unavailable',
+  })
+  startPlannerProviderLogin() {
+    return this.trainingPlanService.startPlannerProviderLogin();
+  }
 
   @UseGuards(AuthGuard('jwt'), UserTypeGuard)
   @ApiBearerAuth()
@@ -75,6 +107,38 @@ export class TrainingPlanController {
       body.input,
       parseAthleteId(athleteId),
       body.skipNarrative,
+    );
+  }
+
+  @UseGuards(AuthGuard('jwt'), UserTypeGuard)
+  @ApiBearerAuth()
+  @Post('intake')
+  @ApiOperation({
+    summary: 'Continue the AI-guided training-plan intake',
+    description:
+      'Conducts a short planning conversation and extracts a typed brief. The LLM does not create workouts; the existing deterministic engine validates and generates the plan after the athlete reviews the brief.',
+  })
+  @ApiQuery({
+    name: 'athleteId',
+    type: Number,
+    required: false,
+    description: 'Run intake for a coached athlete instead of the caller.',
+  })
+  @ApiResponse({ status: 201, description: 'Next reply and extracted brief' })
+  @ApiResponse({
+    status: 503,
+    description: 'ChatGPT planning provider is disabled or not connected',
+  })
+  async intake(
+    @JwtUser() user: AuthUser,
+    @Body(new ZodValidationPipe(planIntakeRequestSchema))
+    body: PlanIntakeRequest,
+    @Query('athleteId') athleteId?: string,
+  ) {
+    return this.trainingPlanService.intake(
+      user,
+      body,
+      parseAthleteId(athleteId),
     );
   }
 

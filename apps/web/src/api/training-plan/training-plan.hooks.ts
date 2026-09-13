@@ -9,6 +9,41 @@ import {
 import { TrainingPlanAPI } from './training-plan.api';
 import { trainingPlanKeys } from './training-plan.keys';
 
+export const useChatGptPlannerProviderQuery = (
+  enabled: boolean,
+  pollUntilConnected = false,
+) =>
+  useQuery({
+    queryKey: [trainingPlanKeys.plannerProvider],
+    queryFn: TrainingPlanAPI.plannerProvider,
+    enabled,
+    refetchInterval: (query) =>
+      pollUntilConnected && !query.state.data?.connected ? 2000 : false,
+  });
+
+export const useChatGptPlannerLoginMutation = (
+  opt?: MutationOptions<
+    Awaited<ReturnType<typeof TrainingPlanAPI.startPlannerProviderLogin>>,
+    Error,
+    void
+  >,
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    ...opt,
+    mutationFn: TrainingPlanAPI.startPlannerProviderLogin,
+    onSuccess: (data, variables, onMutateResult, context) => {
+      if (opt?.onSuccess) {
+        opt.onSuccess(data, variables, onMutateResult, context);
+      }
+      queryClient.invalidateQueries({
+        queryKey: [trainingPlanKeys.plannerProvider],
+      });
+    },
+  });
+};
+
 export const useTrainingPlansQuery = (
   athleteId?: number,
   opt?: QueryOptions<Awaited<ReturnType<typeof TrainingPlanAPI.list>>>,
@@ -66,6 +101,18 @@ export const usePreviewTrainingPlanMutation = (
   useMutation({
     ...opt,
     mutationFn: TrainingPlanAPI.preview,
+  });
+
+export const useTrainingPlanIntakeMutation = (
+  opt?: MutationOptions<
+    Awaited<ReturnType<typeof TrainingPlanAPI.intake>>,
+    Error,
+    Parameters<typeof TrainingPlanAPI.intake>[0]
+  >,
+) =>
+  useMutation({
+    ...opt,
+    mutationFn: TrainingPlanAPI.intake,
   });
 
 export const useCreateTrainingPlanMutation = (

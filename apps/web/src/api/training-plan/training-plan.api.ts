@@ -1,10 +1,15 @@
 import { getLocale } from '@/paraglide/runtime';
 import client, { routes } from '@/utils/axios';
+import { isAxiosError } from 'axios';
 
 import {
+  ChatGptPlannerLoginResponse,
+  ChatGptPlannerProviderStatus,
   CreateTrainingPlanDto,
   GeneratedPlanData,
   PlanGenerationInput,
+  PlanIntakeRequest,
+  PlanIntakeResponse,
   TrainingPlanAdjustmentDto,
   UpdateTrainingPlanDto,
 } from '@openathlete/shared';
@@ -123,6 +128,38 @@ function mapDetail(plan: TrainingPlanDetail): TrainingPlanDetail {
 }
 
 export class TrainingPlanAPI {
+  static async plannerProvider(): Promise<ChatGptPlannerProviderStatus> {
+    const res = await client.get(routes.trainingPlan.plannerProvider);
+    return res.data as ChatGptPlannerProviderStatus;
+  }
+
+  static async startPlannerProviderLogin(): Promise<ChatGptPlannerLoginResponse> {
+    const res = await client.post(routes.trainingPlan.plannerProviderLogin);
+    return res.data as ChatGptPlannerLoginResponse;
+  }
+
+  static async intake(params: {
+    body: PlanIntakeRequest;
+    athleteId?: number;
+  }): Promise<PlanIntakeResponse> {
+    try {
+      const res = await client.post(routes.trainingPlan.intake, params.body, {
+        params: { athleteId: params.athleteId },
+      });
+
+      return res.data as PlanIntakeResponse;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const message = (error.response?.data as { message?: unknown })
+          ?.message;
+        if (typeof message === 'string') throw new Error(message);
+        if (Array.isArray(message)) throw new Error(message.join(', '));
+      }
+
+      throw error;
+    }
+  }
+
   static async preview(params: {
     input: PlanGenerationInput;
     athleteId?: number;
@@ -130,7 +167,13 @@ export class TrainingPlanAPI {
   }): Promise<PlanPreview> {
     const res = await client.post(
       routes.trainingPlan.preview,
-      { input: { ...params.input, language: getLocale().toUpperCase() as 'EN' | 'FR' | 'IT' }, skipNarrative: params.skipNarrative ?? false },
+      {
+        input: {
+          ...params.input,
+          language: getLocale().toUpperCase() as 'EN' | 'FR' | 'IT',
+        },
+        skipNarrative: params.skipNarrative ?? false,
+      },
       { params: { athleteId: params.athleteId } },
     );
 
@@ -141,9 +184,19 @@ export class TrainingPlanAPI {
     body: CreateTrainingPlanDto;
     athleteId?: number;
   }): Promise<TrainingPlanDetail> {
-    const res = await client.post(routes.trainingPlan.create, { ...params.body, input: { ...params.body.input, language: getLocale().toUpperCase() as 'EN' | 'FR' | 'IT' } }, {
-      params: { athleteId: params.athleteId },
-    });
+    const res = await client.post(
+      routes.trainingPlan.create,
+      {
+        ...params.body,
+        input: {
+          ...params.body.input,
+          language: getLocale().toUpperCase() as 'EN' | 'FR' | 'IT',
+        },
+      },
+      {
+        params: { athleteId: params.athleteId },
+      },
+    );
 
     return mapDetail(res.data);
   }

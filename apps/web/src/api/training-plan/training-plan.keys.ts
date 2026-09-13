@@ -1,5 +1,6 @@
 export const trainingPlanKeys = {
   root: 'TrainingPlanAPI',
+  plannerProvider: 'TrainingPlanAPI.plannerProvider',
   list: 'TrainingPlanAPI.list',
   current: 'TrainingPlanAPI.current',
   get: 'TrainingPlanAPI.get',
