@@ -5,9 +5,10 @@ import {
   useTrainingPlansQuery,
   useUpdateTrainingPlanMutation,
 } from '@/api/training-plan';
+import { ActivityFileImport } from '@/components/activity-file-import';
+import { ComplianceBadge } from '@/components/event-details/step-compliance-card';
 import { LoadingScreen } from '@/components/loading-screen';
 import { TrainingPlanWizard } from '@/components/training-plan-wizard';
-import { ActivityFileImport } from '@/components/activity-file-import';
 import { formatDurationShort } from '@/components/training-plan-wizard/format';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,7 +24,11 @@ import { Target } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { PLAN_STATUS } from '@openathlete/shared';
+import {
+  type ComplianceSegment,
+  PLAN_STATUS,
+  sessionCompliance,
+} from '@openathlete/shared';
 
 /**
  * Training plan view
@@ -276,13 +281,25 @@ function WeekCard({
                 </Badge>
               )}
               {session.training?.relatedActivityId !== null && (
-                <Badge variant="secondary">✓</Badge>
+                <CompletedBadge
+                  segments={session.training?.relatedActivity?.segments}
+                />
               )}
             </div>
           </div>
         ))}
       </CardContent>
     </Card>
+  );
+}
+
+/** Completed session: time-in-target % when recorded on the watch, a tick otherwise. */
+function CompletedBadge({ segments }: { segments?: ComplianceSegment[] }) {
+  const compliance = sessionCompliance(segments);
+  return compliance !== null ? (
+    <ComplianceBadge value={compliance} />
+  ) : (
+    <Badge variant="secondary">✓</Badge>
   );
 }
 

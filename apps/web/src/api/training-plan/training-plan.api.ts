@@ -69,6 +69,9 @@ export type PlanSessionRecord = {
     estimatedLoad: number | null;
     manuallyEdited: boolean;
     relatedActivityId: number | null;
+    relatedActivity?: {
+      segments?: { timeInTarget: number | null; movingTime: number | null }[];
+    } | null;
     workout: { workoutId: number; steps: unknown[] } | null;
   } | null;
 };

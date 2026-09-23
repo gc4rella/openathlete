@@ -228,7 +228,15 @@ export class PlanMaterializationService {
                     competition: { include: { relatedActivity: true } },
                     training: {
                       include: {
-                        relatedActivity: true,
+                        relatedActivity: {
+                          include: {
+                            // Enough for the plan view's per-session compliance badge.
+                            segments: {
+                              where: { segmentType: 'WORKOUT_STEP' },
+                              select: { timeInTarget: true, movingTime: true },
+                            },
+                          },
+                        },
                         workout: {
                           include: {
                             steps: {

@@ -37,3 +37,4 @@ export {
 } from './target-metric.map';
 export { getTargetIntensity, DEFAULT_METRIC_VALUES } from './target-intensity';
 export * from './calendar-date';
+export * from './step-compliance';

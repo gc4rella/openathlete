@@ -22,6 +22,7 @@ import { SelectEvent } from '../select-event';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { WorkoutGraph, WorkoutSummary } from '../workout';
+import { StepComplianceCard } from './step-compliance-card';
 
 interface P {
   event: CompetitionEvent | TrainingEvent;
@@ -176,6 +177,12 @@ export function TrainingCompetitionDetails({ event }: P) {
               <WorkoutSummary workout={event.workout} />
             </CardContent>
           </Card>
+        )}
+        {isTraining && event.workout && !!event.relatedActivity?.eventId && (
+          <StepComplianceCard
+            activityEventId={event.relatedActivity.eventId}
+            workout={event.workout}
+          />
         )}
       </div>
     </>

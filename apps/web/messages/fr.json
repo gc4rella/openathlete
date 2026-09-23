@@ -1053,5 +1053,12 @@
   "training_plan_status_completed": "Terminé",
   "training_plan_status_archived": "Archivé",
   "training_plan_other_plans": "Autres plans",
-  "training_plan_coach_notes": "De votre coach"
+  "training_plan_coach_notes": "De votre coach",
+  "step_compliance": "Respect des étapes",
+  "step_compliance_summary": "{percent}% du temps mesuré dans la cible",
+  "step_compliance_recorded": "Enregistré en direct par l’app montre OpenAthlete",
+  "step_compliance_step": "Étape",
+  "step_compliance_target": "Cible",
+  "step_compliance_actual": "Réalisé",
+  "step_compliance_on_target": "Dans la cible"
 }
