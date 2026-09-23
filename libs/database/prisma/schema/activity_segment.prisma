@@ -52,6 +52,8 @@ model ActivitySegment {
   averageGapSpeed        Float?              @map("average_gap_speed")
   /// Average normalized speed in m/s
   averageNormalizedSpeed Float?              @map("average_normalized_speed")
+  /// Fraction (0-1) of measured time inside the step's target, as coached live on the device
+  timeInTarget           Float?              @map("time_in_target")
 
   // relationships
   eventActivity   EventActivity @relation(fields: [eventActivityId], references: [eventActivityId], onDelete: Cascade)

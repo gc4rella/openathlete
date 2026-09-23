@@ -103,6 +103,7 @@ export const EVENT_INCLUDES = {
           averageGapSpeed: true,
           averageNormalizedSpeed: true,
           workoutStepId: true,
+          timeInTarget: true,
           createdAt: true,
           updatedAt: true,
         },

@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { ApiEnvSchemaType } from '@openathlete/shared';
@@ -8,9 +9,11 @@ import './instrument';
 import { AppModule } from './modules/app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     rawBody: true,
   });
+  // Device uploads carry a sample stream; a multi-hour run exceeds the 100 KB default.
+  app.useBodyParser('json', { limit: '5mb' });
 
   const configService = app.get(ConfigService<ApiEnvSchemaType, true>);
   const corsOrigins = configService.get('CORS_ORIGINS');

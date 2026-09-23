@@ -23,3 +23,4 @@ export * from './athlete-settings.dto';
 export * from './provider-preferences.dto';
 export * from './injury.dto';
 export * from './plan.dto';
+export * from './device.dto';

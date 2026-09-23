@@ -1,5 +1,3 @@
-import { ActivityFileImportController } from './controllers/activity-file-import.controller';
-import { ActivityFileImportService } from './services/activity-file-import.service';
 import { Module, forwardRef } from '@nestjs/common';
 
 import { AuthModule } from '../auth';
@@ -10,9 +8,11 @@ import { ProvidersSyncModule } from '../providers-sync/providers-sync.module';
 import { QueueModule } from '../queue';
 import { EventController } from './controllers';
 import { ActivityFeedbackController } from './controllers/activity-feedback.controller';
+import { ActivityFileImportController } from './controllers/activity-file-import.controller';
 import { AthleteController } from './controllers/athlete.controller';
 import { CoachController } from './controllers/coach.controller';
 import { CycleController } from './controllers/cycle.controller';
+import { DeviceController } from './controllers/device.controller';
 import { EquipmentController } from './controllers/equipment.controller';
 import { EventTemplateFolderController } from './controllers/event-template-folder.controller';
 import { EventTemplateController } from './controllers/event-template.controller';
@@ -27,9 +27,11 @@ import { ActivityFileParserService } from './helpers/activity-file-parser.servic
 import { CycleService, EventService, WorkoutService } from './services';
 import { ActivityDetailService } from './services/activity-detail.service';
 import { ActivityFeedbackService } from './services/activity-feedback.service';
+import { ActivityFileImportService } from './services/activity-file-import.service';
 import { AthleteSettingsService } from './services/athlete-settings.service';
 import { AthleteService } from './services/athlete.service';
 import { CoachService } from './services/coach.service';
+import { DeviceService } from './services/device.service';
 import { EquipmentService } from './services/equipment.service';
 import { EventTemplateFolderService } from './services/event-template-folder.service';
 import { EventTemplateService } from './services/event-template.service';
@@ -75,6 +77,7 @@ import { WeatherService } from './services/weather/weather.service';
     TrainingZoneController,
     TrainingLoadController,
     CycleController,
+    DeviceController,
   ],
   providers: [
     ActivityFileImportService,
@@ -95,6 +98,7 @@ import { WeatherService } from './services/weather/weather.service';
     TrainingZoneService,
     TrainingLoadService,
     CycleService,
+    DeviceService,
     WeatherService,
     ActivityFeedbackService,
     OpenMeteoWeatherProvider,
