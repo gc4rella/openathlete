@@ -1,4 +1,5 @@
 version: '3.8'
+name: openathlete
 
 services:
   # PostgreSQL Database with pgvector extension
