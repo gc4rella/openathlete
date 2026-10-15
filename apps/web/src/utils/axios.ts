@@ -262,9 +262,10 @@ client.interceptors.response.use(undefined, async (error) => {
     localStorage.removeItem(REFRESH_TOKEN);
     const queryClient = new QueryClient();
     queryClient.clear();
-  } else {
-    throw error;
   }
+  // Always propagate the error so callers (e.g. login with a wrong password,
+  // password reset with an expired link) can tell the user what went wrong.
+  throw error;
 });
 
 export default client;

@@ -1034,5 +1034,12 @@
   "training_plan_status_completed": "Completed",
   "training_plan_status_archived": "Archived",
   "training_plan_other_plans": "Other plans",
-  "training_plan_coach_notes": "From your coach"
+  "training_plan_coach_notes": "From your coach",
+  "login_invalid_credentials": "Incorrect email or password.",
+  "login_failed": "We couldn't log you in. Please try again.",
+  "create_account_email_taken": "An account with this email already exists. Try logging in instead.",
+  "create_account_failed": "We couldn't create your account. Please try again.",
+  "training_plan_delete_confirm_title": "Delete this plan?",
+  "training_plan_delete_confirm_message": "This removes the plan and its planned sessions from your calendar. Your recorded activities are kept. This cannot be undone.",
+  "training_plan_delete_failed": "We couldn't delete the plan. Please try again."
 }

@@ -8,10 +8,12 @@ import { getPath } from '@/routes/paths';
 import { cn } from '@/utils/shadcn';
 import { OAuthButtons } from '@/views/auth/oauth-buttons';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { isAxiosError } from 'axios';
 import { usePostHog } from 'posthog-js/react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import z from 'zod';
 
 import { loginDtoSchema } from '@openathlete/shared';
@@ -37,6 +39,13 @@ export function LoginView({ className }: React.ComponentProps<'form'>) {
       posthog?.capture('user_logged_in');
       await initialize();
       navigate(getPath(['dashboard']));
+    },
+    onError: (error) => {
+      toast.error(
+        isAxiosError(error) && error.response?.status === 401
+          ? m.login_invalid_credentials()
+          : m.login_failed(),
+      );
     },
   });
   const methods = useForm<z.infer<typeof loginDtoSchema>>({
