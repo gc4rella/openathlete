@@ -1034,5 +1034,12 @@
   "training_plan_status_completed": "Terminé",
   "training_plan_status_archived": "Archivé",
   "training_plan_other_plans": "Autres plans",
-  "training_plan_coach_notes": "De votre coach"
+  "training_plan_coach_notes": "De votre coach",
+  "login_invalid_credentials": "E-mail ou mot de passe incorrect.",
+  "login_failed": "Impossible de vous connecter. Veuillez réessayer.",
+  "create_account_email_taken": "Un compte existe déjà avec cet e-mail. Essayez plutôt de vous connecter.",
+  "create_account_failed": "Impossible de créer votre compte. Veuillez réessayer.",
+  "training_plan_delete_confirm_title": "Supprimer ce plan ?",
+  "training_plan_delete_confirm_message": "Cela supprime le plan et ses séances prévues de votre calendrier. Vos activités enregistrées sont conservées. Cette action est irréversible.",
+  "training_plan_delete_failed": "Impossible de supprimer le plan. Veuillez réessayer."
 }

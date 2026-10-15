@@ -5,9 +5,10 @@ import {
   useTrainingPlansQuery,
   useUpdateTrainingPlanMutation,
 } from '@/api/training-plan';
+import { ActivityFileImport } from '@/components/activity-file-import';
+import { ConfirmAction } from '@/components/confirm-action';
 import { LoadingScreen } from '@/components/loading-screen';
 import { TrainingPlanWizard } from '@/components/training-plan-wizard';
-import { ActivityFileImport } from '@/components/activity-file-import';
 import { formatDurationShort } from '@/components/training-plan-wizard/format';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -45,6 +46,7 @@ const STATUS_LABELS: Record<string, () => string> = {
 
 export function TrainingPlanView({ athleteId }: { athleteId: number }) {
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const { data: currentPlan, isLoading } =
     useCurrentTrainingPlanQuery(athleteId);
@@ -54,7 +56,11 @@ export function TrainingPlanView({ athleteId }: { athleteId: number }) {
     onError: () => toast.error(m.training_plan_create_failed()),
   });
   const deleteMutation = useDeleteTrainingPlanMutation({
-    onSuccess: () => toast.success(m.training_plan_deleted()),
+    onSuccess: () => {
+      setConfirmDeleteOpen(false);
+      toast.success(m.training_plan_deleted());
+    },
+    onError: () => toast.error(m.training_plan_delete_failed()),
   });
 
   if (isLoading) {
@@ -82,7 +88,19 @@ export function TrainingPlanView({ athleteId }: { athleteId: number }) {
       ) : (
         <PlanDetail
           plan={currentPlan}
-          onDelete={() => deleteMutation.mutate(currentPlan.trainingPlanId)}
+          onDelete={() => setConfirmDeleteOpen(true)}
+        />
+      )}
+
+      {currentPlan && (
+        <ConfirmAction
+          open={confirmDeleteOpen}
+          onClose={() => setConfirmDeleteOpen(false)}
+          onConfirm={() => deleteMutation.mutate(currentPlan.trainingPlanId)}
+          title={m.training_plan_delete_confirm_title()}
+          message={m.training_plan_delete_confirm_message()}
+          confirmText={m.training_plan_delete()}
+          isLoading={deleteMutation.isPending}
         />
       )}
 

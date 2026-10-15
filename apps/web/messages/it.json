@@ -1034,5 +1034,12 @@
   "training_plan_status_completed": "Completato",
   "training_plan_status_archived": "Archiviato",
   "training_plan_other_plans": "Altri piani",
-  "training_plan_coach_notes": "Dal tuo coach"
+  "training_plan_coach_notes": "Dal tuo coach",
+  "login_invalid_credentials": "Email o password non corretti.",
+  "login_failed": "Non è stato possibile accedere. Riprova.",
+  "create_account_email_taken": "Esiste già un account con questa email. Prova ad accedere.",
+  "create_account_failed": "Non è stato possibile creare l'account. Riprova.",
+  "training_plan_delete_confirm_title": "Eliminare questo piano?",
+  "training_plan_delete_confirm_message": "Il piano e le sue sessioni pianificate verranno rimossi dal calendario. Le attività registrate restano. L'operazione è irreversibile.",
+  "training_plan_delete_failed": "Non è stato possibile eliminare il piano. Riprova."
 }
